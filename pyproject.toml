@@ -9,9 +9,8 @@ authors = [
 ]
 dependencies = [
     "flet>=0.80.5",
-    "great-tables>=0.20.0",
     "polars>=1.38.0",
-    "openpyxl>=3.1.0",
+    "xlsxwriter>=3.2.9",
 ]
 
 [dependency-groups]

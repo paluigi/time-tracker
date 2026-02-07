@@ -21,18 +21,16 @@ from flet import (
     dropdown,
     TextButton,
     OutlinedButton,
-    Tabs,
-    Tab,
     Card,
     Markdown,
     FilePicker,
-    InputFilter
+    InputFilter,
+    border,
+    Border,
 )
 from datetime import datetime, date
 from db_operations import Database
 import polars as pl
-from great_tables import GT, md, style
-import openpyxl
 import tempfile
 import os
 
@@ -400,9 +398,11 @@ class Application:
                                 DataColumn(Text("Actions")),
                             ],
                             rows=entry_rows,
-                            border=1,
+                            border=Border.all(2, "grey"),
                             horizontal_margin=10,
                             data_row_max_height=100,
+                            width=800,
+                            show_bottom_border=True,
                         ),
                     ],
                     scroll="auto",
@@ -557,6 +557,7 @@ class Application:
                         [
                             self.date_field,
                             OutlinedButton(
+                                content=Text("Select Date"),
                                 icon=Icons.CALENDAR_MONTH,
                                 on_click=lambda e: self.page.show_dialog(self.entry_date_picker),
                             ),
@@ -614,7 +615,7 @@ class Application:
         
         self.report_project_dropdown = Dropdown(
             label="Project",
-            options=[dropdown.Option(label, value) for label, value in project_options]
+            options=[dropdown.Option(value, label) for label, value in project_options]
         )
         
         self.report_from_date_picker = DatePicker()
@@ -659,7 +660,7 @@ class Application:
                                 OutlinedButton(
                                     "Export Excel",
                                     icon=Icons.DOWNLOAD,
-                                    on_click=lambda e: self.export_to_excel(),
+                                    on_click=self.handle_export_excel,
                                 ),
                             ],
                             alignment="spaceBetween"
@@ -697,8 +698,12 @@ class Application:
         """Pick to date for report filter."""
         self.page.show_dialog(self.report_to_date_picker)
     
+    async def handle_export_excel(self, e):
+        """Async wrapper for export to Excel button handler."""
+        await self.export_to_excel()
+    
     def generate_report(self):
-        """Generate report using Polars and GreatTables."""
+        """Generate report using Polars and display as DataTable."""
         project_id = self.report_project_dropdown.value
         
         if not project_id:
@@ -730,29 +735,45 @@ class Application:
         # Calculate total hours
         total_hours = df["Hours"].sum()
         
-        # Create GreatTable
-        gt = GT(df)
+        # Build entries table rows
+        entry_rows = []
+        for entry in entries:
+            entry_rows.append(
+                DataRow(
+                    cells=[
+                        DataCell(Text(entry[1])),
+                        DataCell(Text(f"{entry[2]:.1f}")),
+                        DataCell(Text(entry[3] or "", max_lines=2, overflow="ellipsis")),
+                    ]
+                )
+            )
         
-        # Style the table
-        gt = gt.tab_header(
-            text=f"Report: {project[1]}",
-        )
-        
-        # Add footer with totals
-        gt = gt.tab_source_note(
-            source_note=f"Total Hours: {total_hours:.1f} | Entries: {len(entries)}",
-        )
-        
-        # Render table to HTML
-        table_html = gt.as_raw_html()
-        
-        # Display in Markdown component
+        # Display as DataTable with summary statistics above
         self.report_content.content = Column(
             [
-                Markdown(table_html, selectable=True),
+                Text(f"Report: {project[1]}", size=20, weight="bold"),
                 Container(height=10),
-                Text(f"Total Hours: {total_hours:.1f}", size=18, weight="bold"),
-                Text(f"Total Entries: {len(entries)}", size=14),
+                Row(
+                    [
+                        Text(f"Total Entries: {len(entries)}", size=14, color="grey"),
+                        Text(f"Total Hours: {total_hours:.1f}", size=14, color="grey"),
+                    ],
+                    alignment="spaceBetween"
+                ),
+                Container(height=20),
+                DataTable(
+                    columns=[
+                        DataColumn(Text("Date")),
+                        DataColumn(Text("Hours")),
+                        DataColumn(Text("Description"), numeric=False),
+                    ],
+                    rows=entry_rows,
+                    border=Border.all(2, "grey"),
+                    horizontal_margin=10,
+                    data_row_max_height=100,
+                    width=800,
+                    show_bottom_border=True,
+                ),
             ],
             scroll="auto"
         )
@@ -762,7 +783,7 @@ class Application:
         
         self.report_content.update()
     
-    def export_to_excel(self):
+    async def export_to_excel(self):
         """Export report to Excel."""
         if not hasattr(self, 'current_report_data'):
             self.show_snack_bar("Please generate a report first")
@@ -778,27 +799,26 @@ class Application:
             # Write to Excel using openpyxl
             df.write_excel(tmp_path)
             
-            # Open file picker to save
-            save_dialog = FilePicker()
-            save_dialog.on_result = self.on_excel_save_result
-            self.page.overlay.append(save_dialog)
-            self.page.update()
-            
-            save_dialog.save_file(
+            # Open file picker to save using new Flet pattern
+            save_path = await FilePicker().save_file(
                 dialog_title="Save Report",
                 file_name=f"{project_name}_report_{datetime.now().strftime('%Y%m%d')}.xlsx",
                 initial_directory=os.path.expanduser("~")
             )
             
+            if save_path:
+                # Copy temporary file to chosen location
+                import shutil
+                shutil.copy2(tmp_path, save_path)
+                self.show_snack_bar(f"Report exported to {save_path}")
+            else:
+                self.show_snack_bar("Export cancelled")
+            
+            # Clean up temporary file
+            os.unlink(tmp_path)
+            
         except Exception as ex:
             self.show_snack_bar(f"Error exporting to Excel: {str(ex)}")
-    
-    def on_excel_save_result(self, e):
-        """Handle Excel file save result."""
-        if e.path:
-            self.show_snack_bar(f"Report exported to {e.path}")
-        else:
-            self.show_snack_bar("Export cancelled")
 
 
 if __name__ == '__main__':

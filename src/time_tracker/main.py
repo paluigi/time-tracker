@@ -126,17 +126,12 @@ class Application:
             autofocus=True,
         )
         
-        # Define close handler
-        def close_dialog_handler(e):
-            dialog.open = False
-            self.page.update()
-        
         # Create dialog
         dialog = AlertDialog(
             title=Text("Create New Project"),
             content=Column([self.project_name_field], tight=True),
             actions=[
-                TextButton("Cancel", on_click=close_dialog_handler),
+                TextButton("Cancel", on_click=lambda e: self.close_dialog()),
                 Button("Create", on_click=lambda e: self.create_project(dialog, e)),
             ],
         )
@@ -252,13 +247,13 @@ class Application:
             content=Column([self.project_name_field], tight=True),
             actions=[
                 TextButton("Cancel", on_click=lambda e: self.close_dialog()),
-                Button("Save", on_click=lambda e: self.update_project(e)),
+                Button("Save", on_click=lambda e: self.update_project(dialog, e)),
             ],
         )
         
         self.page.show_dialog(dialog)
     
-    def update_project(self, e):
+    def update_project(self, dialog, e):
         """Update project name."""
         project_name = self.project_name_field.value.strip()
         
@@ -268,7 +263,8 @@ class Application:
         
         try:
             self.db.update_project(self.current_project, project_name)
-            self.close_dialog()
+            dialog.open = False
+            self.page.update()
             self.show_projects_view()
             self.show_snack_bar(f"Project updated successfully")
         except Exception as ex:
@@ -305,17 +301,7 @@ class Application:
     
     def close_dialog(self):
         """Close current dialog."""
-        if self.entry_dialog:
-            self.entry_dialog.open = False
-            self.page.update()
-        elif self.confirm_delete_entry_dialog:
-            self.confirm_delete_entry_dialog.open = False
-            self.page.update()
-        elif self.confirm_delete_project_dialog:
-            self.confirm_delete_project_dialog.open = False
-            self.page.update()
-        else:
-            self.page.pop_dialog()
+        self.page.pop_dialog()
     
     # ==================== PROJECT DETAIL VIEW ====================
     
@@ -510,7 +496,8 @@ class Application:
                 self.db.create_entry(self.current_project, date_str, hours_float, description)
                 self.show_snack_bar("Entry created successfully")
             
-            self.close_dialog()
+            self.entry_dialog.open = False
+            self.page.update()
             self.view_project_detail(self.current_project)
         except Exception as ex:
             self.show_snack_bar(f"Error saving entry: {str(ex)}")

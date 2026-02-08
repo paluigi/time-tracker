@@ -22,10 +22,8 @@ from flet import (
     TextButton,
     OutlinedButton,
     Card,
-    Markdown,
     FilePicker,
     InputFilter,
-    border,
     Border,
 )
 from datetime import datetime, date
@@ -104,6 +102,17 @@ class Application:
         
         # Show initial view
         self.show_projects_view()
+    
+    def get_local_date(self, dt: datetime) -> date:
+        """Convert datetime (potentially in UTC) to local date.
+        
+        This handles the case where Flet's DatePicker returns datetime in UTC,
+        and we need to convert it to the user's local timezone before extracting the date.
+        """
+        if dt.tzinfo is not None:
+            # Convert to local timezone before extracting date
+            return dt.astimezone().date()
+        return dt.date()
     
     def update_content(self, content):
         """Update the main content area."""
@@ -402,7 +411,8 @@ class Application:
     def show_create_entry_dialog(self):
         """Show dialog to create a new entry."""
         self.editing_entry = False
-        self.entry_date_picker = DatePicker(value=datetime.now())
+        initial_date = datetime.now()
+        self.entry_date_picker = DatePicker(value=initial_date)
         self.entry_hours_field = TextField(
             label="Hours",
             hint_text="e.g., 2.5",
@@ -420,7 +430,9 @@ class Application:
         def handle_date_change(e):
             """Handle date picker change."""
             if self.entry_date_picker.value:
-                self.date_field.value = self.entry_date_picker.value.strftime("%Y-%m-%d")
+                # Extract date portion, converting from UTC to local time if needed
+                date_str = self.get_local_date(self.entry_date_picker.value).strftime("%Y-%m-%d")
+                self.date_field.value = date_str
                 self.date_field.update()
         
         self.entry_date_picker.on_change = handle_date_change
@@ -488,7 +500,8 @@ class Application:
             return
         
         try:
-            date_str = entry_date.strftime("%Y-%m-%d")
+            # Extract date portion, converting from UTC to local time if needed
+            date_str = self.get_local_date(entry_date).strftime("%Y-%m-%d")
             if self.editing_entry:
                 self.db.update_entry(self.current_entry, date_str, hours_float, description)
                 self.show_snack_bar("Entry updated successfully")
@@ -531,7 +544,9 @@ class Application:
         def handle_date_change(e):
             """Handle date picker change."""
             if self.entry_date_picker.value:
-                self.date_field.value = self.entry_date_picker.value.strftime("%Y-%m-%d")
+                # Extract date portion, converting from UTC to local time if needed
+                date_str = self.get_local_date(self.entry_date_picker.value).strftime("%Y-%m-%d")
+                self.date_field.value = date_str
                 self.date_field.update()
         
         self.entry_date_picker.on_change = handle_date_change
@@ -668,13 +683,15 @@ class Application:
     def _update_from_date(self, e):
         """Update from date when date picker changes."""
         if e.control.value:
-            self.from_date = e.control.value
+            # Extract date portion, converting from UTC to local time if needed
+            self.from_date = self.get_local_date(e.control.value)
             self.show_report_view()  # Refresh to show new date
     
     def _update_to_date(self, e):
         """Update to date when date picker changes."""
         if e.control.value:
-            self.to_date = e.control.value
+            # Extract date portion, converting from UTC to local time if needed
+            self.to_date = self.get_local_date(e.control.value)
             self.show_report_view()  # Refresh to show new date
     
     def pick_from_date(self):

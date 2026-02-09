@@ -25,6 +25,7 @@ from flet import (
     FilePicker,
     InputFilter,
     Border,
+    Switch,
 )
 from datetime import datetime, date
 from db_operations import Database
@@ -76,11 +77,16 @@ class Application:
         # Initialize database
         await self.db.initialize()
         
+        # Load and apply settings
+        saved_theme = self.db.get_setting("theme_mode", "light")
+        self.page.theme_mode = saved_theme
+        
         # Build navigation bar
         self.navbar = Row(
             [
                 IconButton(Icons.FOLDER, on_click=lambda e: self.show_projects_view(), tooltip="Projects"),
                 IconButton(Icons.ASSIGNMENT, on_click=lambda e: self.show_report_view(), tooltip="Reports"),
+                IconButton(Icons.SETTINGS, on_click=lambda e: self.show_settings_view(), tooltip="Settings"),
             ],
             alignment="spaceBetween",
         )
@@ -823,6 +829,72 @@ class Application:
             
         except Exception as ex:
             self.show_snack_bar(f"Error exporting to Excel: {str(ex)}")
+    
+    # ==================== SETTINGS VIEW ====================
+    
+    def show_settings_view(self):
+        """Display the settings view."""
+        self.current_view = "settings"
+        
+        # Get current theme setting
+        current_theme = self.db.get_setting("theme_mode", "light")
+        is_dark = current_theme == "dark"
+        
+        # Create theme switch
+        theme_switch = Switch(
+            label="Dark Mode",
+            value=is_dark,
+            on_change=self.toggle_theme
+        )
+        
+        self.update_content(
+            Container(
+                Column(
+                    [
+                        Text("Settings", size=28, weight="bold"),
+                        Container(height=20),
+                        Card(
+                            content=Container(
+                                Column(
+                                    [
+                                        Row(
+                                            [
+                                                Text("Theme", size=18, weight="bold"),
+                                                theme_switch,
+                                            ],
+                                            alignment="spaceBetween"
+                                        ),
+                                        Container(height=10),
+                                        Text("Toggle between light and dark theme.", size=14, color="grey"),
+                                    ],
+                                    spacing=5,
+                                    tight=True
+                                ),
+                                padding=15,
+                                width=500
+                            )
+                        ),
+                    ],
+                    scroll="auto",
+                ),
+                padding=20,
+            )
+        )
+    
+    def toggle_theme(self, e):
+        """Toggle between light and dark theme."""
+        is_dark = e.control.value
+        new_theme = "dark" if is_dark else "light"
+        
+        # Update page theme
+        self.page.theme_mode = new_theme
+        self.page.update()
+        
+        # Save to database
+        self.db.set_setting("theme_mode", new_theme)
+        
+        # Show feedback
+        self.show_snack_bar(f"Theme changed to {new_theme} mode")
 
 
 if __name__ == '__main__':

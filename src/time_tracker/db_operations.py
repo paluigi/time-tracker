@@ -49,6 +49,15 @@ class Database:
             )
         """)
         
+        # Settings table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         self.conn.commit()
     
     # Project operations
@@ -157,6 +166,29 @@ class Database:
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM entries WHERE id = ?", (entry_id,))
         self.conn.commit()
+    
+    # Settings operations
+    def get_setting(self, key: str, default: str = None):
+        """Get a setting value by key. Returns default if not found."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
+        result = cursor.fetchone()
+        return result[0] if result else default
+    
+    def set_setting(self, key: str, value: str):
+        """Set a setting value (insert or update)."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            INSERT INTO settings (key, value) VALUES (?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
+        """, (key, value, value))
+        self.conn.commit()
+    
+    def get_all_settings(self):
+        """Get all settings as a dictionary."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT key, value FROM settings")
+        return {row[0]: row[1] for row in cursor.fetchall()}
     
     def close(self):
         """Close database connection."""

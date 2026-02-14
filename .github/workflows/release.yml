@@ -40,7 +40,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --frozen --no-dev
+        run: uv sync --frozen
 
       - name: Build for ${{ matrix.platform }}
         run: |

@@ -161,3 +161,6 @@ cython_debug/
 
 # Flet
 storage/
+
+# UV lock file (explicitly track this file)
+!uv.lock

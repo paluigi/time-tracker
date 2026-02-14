@@ -5,7 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "Flet developer", email = "you@example.com" }
+    { name = "Luigi Palumbo"}
 ]
 dependencies = [
     "flet>=0.80.5",
@@ -21,10 +21,10 @@ dev = [
 ]
 
 [tool.flet]
-org = "com.mycompany"
+org = "com.luibao"
 product = "time-tracker"
-company = "Flet"
-copyright = "Copyright (C) 2023-2026 by Flet"
+company = "Luibao"
+copyright = "Copyright (C) 2023-2026 by Luibao"
 
 [tool.flet.app]
 path = "src/time_tracker"

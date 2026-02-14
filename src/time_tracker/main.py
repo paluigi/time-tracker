@@ -26,10 +26,16 @@ from flet import (
     InputFilter,
     Border,
     Switch,
+    UrlLauncher,
 )
 from datetime import datetime, date
 from db_operations import Database
 import polars as pl
+
+try:
+    from time_tracker import __version__
+except ImportError:
+    __version__ = "0.1.0"
 import tempfile
 import os
 
@@ -853,6 +859,7 @@ class Application:
                     [
                         Text("Settings", size=28, weight="bold"),
                         Container(height=20),
+                        # Theme card
                         Card(
                             content=Container(
                                 Column(
@@ -874,12 +881,66 @@ class Application:
                                 width=500
                             )
                         ),
+                        Container(height=10),
+                        # About card
+                        Card(
+                            content=Container(
+                                Column(
+                                    [
+                                        Row(
+                                            [
+                                                Text("About", size=18, weight="bold"),
+                                            ],
+                                        ),
+                                        Container(height=10),
+                                        Text(f"Version: {__version__}", size=14, color="grey"),
+                                    ],
+                                    spacing=5,
+                                    tight=True
+                                ),
+                                padding=15,
+                                width=500
+                            )
+                        ),
+                        Container(height=10),
+                        # Repository card
+                        Card(
+                            content=Container(
+                                Column(
+                                    [
+                                        Row(
+                                            [
+                                                Text("Repository", size=18, weight="bold"),
+                                            ],
+                                        ),
+                                        Container(height=10),
+                                        Row(
+                                            [
+                                                IconButton(Icons.LINK, icon_size=18, on_click=lambda e: self.page.run_task(self.open_github_repo)),
+                                                TextButton(
+                                                    "github.com/paluigi/time-tracker",
+                                                    on_click=lambda e: self.page.run_task(self.open_github_repo),
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                    spacing=5,
+                                    tight=True
+                                ),
+                                padding=15,
+                                width=500
+                            )
+                        ),
                     ],
                     scroll="auto",
                 ),
                 padding=20,
             )
         )
+    
+    async def open_github_repo(self):
+        """Open the GitHub repository in the browser."""
+        await UrlLauncher().launch_url("https://github.com/paluigi/time-tracker")
     
     def toggle_theme(self, e):
         """Toggle between light and dark theme."""

@@ -13,8 +13,8 @@ class Database:
         """Initialize database with cross-platform path."""
         storage_paths = StoragePaths()
         try:
-            documents_dir = await storage_paths.get_application_documents_directory()
-            self.db_path = os.path.join(documents_dir, "time_tracker.db")
+            app_dir = await storage_paths.get_application_support_directory()
+            self.db_path = os.path.join(app_dir, "time_tracker.db")
         except FletUnsupportedPlatformException:
             # Fallback for web mode or unsupported platforms
             self.db_path = ":memory:"

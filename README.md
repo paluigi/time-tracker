@@ -84,4 +84,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with love by Luigi.** 
 
-*Use at your own risk, no warranty provided.*
+*This tool is provided AS-IS, without warranty of any kind. Use at your own risk.*

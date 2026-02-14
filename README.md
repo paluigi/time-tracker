@@ -1,61 +1,87 @@
-# TimeTracker app
+# ⏱️ TimeTracker
 
-## Run the app
+A simple, multiplatform time tracking application built with [Flet](https://flet.dev/). Designed for a single user tracking time on their local machine.
 
-### uv
+![Platform Support](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android%20%7C%20Web-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-green)
+![License](https://img.shields.io/badge/license-MIT-orange)
 
-Run as a desktop app:
+## ✨ Features
 
-```
+- **📁 Project Management** - Create, edit, and delete projects to organize your work
+- **⏰ Time Tracking** - Log time entries with date, hours, and description
+- **📊 Simple Dashboarding** - Keep track of time spent on each project with total hours
+- **📥 Excel Export** - Export your time data for use in Excel spreadsheets
+- **🎨 Themes** - Light and dark mode support
+- **🌐 Multiplatform** - Runs on Windows, macOS, Linux, iOS, Android, and Web
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.10 or higher
+- [uv](https://github.com/astral-sh/uv) (recommended) or pip
+
+### Run the App
+
+**Desktop App:**
+```bash
 uv run flet run
 ```
 
-Run as a web app:
-
-```
+**Web App:**
+```bash
 uv run flet run --web
 ```
 
-For more details on running the app, refer to the [Getting Started Guide](https://docs.flet.dev/).
+## 📦 Building
 
-## Build the app
+Build for your target platform:
 
 ### Android
-
-```
+```bash
 flet build apk -v
 ```
 
-For more details on building and signing `.apk` or `.aab`, refer to the [Android Packaging Guide](https://docs.flet.dev/publish/android/).
-
 ### iOS
-
-```
+```bash
 flet build ipa -v
 ```
 
-For more details on building and signing `.ipa`, refer to the [iOS Packaging Guide](https://docs.flet.dev/publish/ios/).
-
 ### macOS
-
-```
+```bash
 flet build macos -v
 ```
 
-For more details on building macOS package, refer to the [macOS Packaging Guide](https://docs.flet.dev/publish/macos/).
-
 ### Linux
-
-```
+```bash
 flet build linux -v
 ```
 
-For more details on building Linux package, refer to the [Linux Packaging Guide](https://docs.flet.dev/publish/linux/).
-
 ### Windows
-
-```
+```bash
 flet build windows -v
 ```
 
-For more details on building Windows package, refer to the [Windows Packaging Guide](https://docs.flet.dev/publish/windows/).
+For more details on building and signing, refer to the [Flet Packaging Guide](https://docs.flet.dev/publish/).
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Flet](https://flet.dev/) - Cross-platform UI framework
+- **Database**: SQLite - Local data storage
+- **Data Processing**: [Polars](https://www.pola.rs/) - Fast DataFrame library
+- **Excel Export**: [xlsxwriter](https://xlsxwriter.readthedocs.io/) - Python Excel writer
+
+## 🤝 Contributing
+
+Pull requests are welcome! If you'd like to contribute, feel free to fork the repository and submit a PR.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Built with love by Luigi.** 
+
+*Use at your own risk, no warranty provided.*
